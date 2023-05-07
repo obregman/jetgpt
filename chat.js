@@ -1,12 +1,17 @@
+const term = require('terminal-kit').terminal;
 const prompt = require("prompt-sync")();
 const OpenAI = require("./src/OpenAI.js");
-const apiKey = process.env['OPENAI_API_KEY'];
-const openAI = new OpenAI(apiKey);
 const model = 'gpt-3.5-turbo';
 
 const quitKeywords = ['quit','exit','bye'];
 
 async function promptLoop() {
+  const apiKey = process.env['OPENAI_API_KEY'];
+  if (!apiKey) {
+    term.red('OpenAI key is missing. Please add environment variable OPENAI_API_KEY\n');
+  }
+  const openAI = new OpenAI(apiKey);
+
   let conversation = '';
   while (true) {
     const input = prompt('> ');
@@ -16,13 +21,12 @@ async function promptLoop() {
     await openAI.generateText(conversation, model, 1000)
       .then(response => {
         conversation += `${response}\n`;
-        console.log(response);
+        term.cyan(`${response}\n`);
       })
       .catch(error => {
-        console.error(error);
+        term.red(`${error}\n`);
       });
     console.log();
   }
 }
-
 promptLoop();
